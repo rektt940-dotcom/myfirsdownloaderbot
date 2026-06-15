@@ -32,12 +32,11 @@ TEXTS = {
                  "Sifatni o'zgartirish uchun /settings buyrug'ini bosing.",
         'settings': "⚙️ Video yuklash sifatini tanlang:",
         'downloading': "⏳ Video yuklanmoqda... Iltimos, kuting.",
-        'uploading': "📤 Telegramga yuborilmoqda...",
         'audio_downloading': "⏳ Qo'shiq ajratib olinmoqda...",
-        'error': "❌ Xatolik yuz berdi:\n{error}",
+        'error': "❌ Xatolik yuz berdi, Iltimos adminga habar bering @XOLDOROV_ABBOS",
         'too_large': "⚠️ Fayl hajmi 50MB dan katta. Telegram botlar faqat 50MB gacha qabul qiladi.",
         'quality_updated': "✅ Sifat o'zgartirildi: {quality_text}",
-        'unsupported': "⚠️ Kechirasiz, bu bot faqat **TikTok** va **Instagram** havolalarini yuklay oladi!"
+        'unsupported': "⚠️ Kechirasiz, bu bot faqat TikTok va Instagram havolalarini yuklay oladi!"
     }
 }
 
@@ -89,11 +88,9 @@ async def handle_url(message: types.Message):
     result = await loop.run_in_executor(None, download_media, url, user_id, quality, 'video')
     
     if result['status'] == 'error':
-        await msg.edit_text(get_text(user_id, 'error', error=result['message']))
+        await msg.edit_text(get_text(user_id, 'error'))
         return
         
-    await msg.edit_text(get_text(user_id, 'uploading'))
-    
     try:
         markup = InlineKeyboardMarkup(inline_keyboard=[
             [InlineKeyboardButton(text="🎵 Qo'shiqni yuklash", callback_data="get_audio")]
@@ -105,10 +102,9 @@ async def handle_url(message: types.Message):
                 await msg.delete()
                 return
             except Exception:
-                await msg.edit_text("⏳ Telegram URL qabul qilmadi. Fayl qilib tortilmoqda...")
                 result = await loop.run_in_executor(None, download_media, url, user_id, quality, 'video_force_dl')
                 if result['status'] == 'error':
-                    await msg.edit_text(get_text(user_id, 'error', error=result['message']))
+                    await msg.edit_text(get_text(user_id, 'error'))
                     return
                 
         # Handle file upload
@@ -124,7 +120,7 @@ async def handle_url(message: types.Message):
             await msg.delete()
             
     except Exception as e:
-        await msg.edit_text(get_text(user_id, 'error', error=str(e)))
+        await msg.edit_text(get_text(user_id, 'error'))
         if result.get('type') == 'file' and 'filepath' in result:
             delete_file(result['filepath'])
 
@@ -143,10 +139,8 @@ async def process_get_audio(callback: CallbackQuery):
     result = await loop.run_in_executor(None, download_media, url, user_id, 'best', 'audio')
     
     if result['status'] == 'error':
-        await msg.edit_text(get_text(user_id, 'error', error=result['message']))
+        await msg.edit_text(get_text(user_id, 'error'))
         return
-        
-    await msg.edit_text(get_text(user_id, 'uploading'))
         
     filepath = result.get('filepath')
     if filepath and os.path.exists(filepath):
