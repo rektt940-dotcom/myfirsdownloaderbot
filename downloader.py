@@ -16,7 +16,7 @@ def get_pytubefix_url(url, format_type='video'):
         print("Pytubefix error:", e)
     return None
 
-def get_dl_opts(user_id, quality='best', format_type='video'):
+def get_dl_opts(user_id, url, quality='best', format_type='video'):
     base_dir = os.path.dirname(os.path.abspath(__file__))
     outtmpl = os.path.join(base_dir, f'downloads/{user_id}_%(id)s.%(ext)s')
     os.makedirs(os.path.join(base_dir, 'downloads'), exist_ok=True)
@@ -28,9 +28,10 @@ def get_dl_opts(user_id, quality='best', format_type='video'):
         'ffmpeg_location': imageio_ffmpeg.get_ffmpeg_exe(),
     }
     
-    cookie_path = os.path.join(base_dir, 'cookies.txt')
-    if os.path.exists(cookie_path):
-        opts['cookiefile'] = cookie_path
+    if 'youtube' in url.lower() or 'youtu.be' in url.lower():
+        cookie_path = os.path.join(base_dir, 'cookies.txt')
+        if os.path.exists(cookie_path):
+            opts['cookiefile'] = cookie_path
     
     if format_type == 'audio':
         opts['format'] = 'bestaudio/best'
@@ -48,7 +49,7 @@ def get_dl_opts(user_id, quality='best', format_type='video'):
     return opts
 
 def download_media(url, user_id, quality='best', format_type='video'):
-    opts = get_dl_opts(user_id, quality, format_type)
+    opts = get_dl_opts(user_id, url, quality, format_type)
     
     with yt_dlp.YoutubeDL(opts) as ydl:
         try:
