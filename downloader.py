@@ -1,7 +1,6 @@
 import os
 import yt_dlp
 import imageio_ffmpeg
-import requests
 
 def get_pytubefix_url(url, format_type='video'):
     try:
