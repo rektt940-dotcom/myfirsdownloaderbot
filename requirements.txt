@@ -4,4 +4,4 @@ Flask>=3.0.2
 gunicorn>=21.2.0
 python-dotenv>=1.0.1
 imageio-ffmpeg>=0.4.9
-pytubefix>=8.4.1
+requests>=2.31.0
