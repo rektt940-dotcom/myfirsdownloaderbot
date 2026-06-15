@@ -61,9 +61,11 @@ def get_dl_opts(user_id, url, quality='best', format_type='video'):
         }]
     else:
         if quality == 'worst':
-            opts['format'] = 'worst'
+            opts['format'] = 'worstvideo+worstaudio/worst'
+        elif quality == 'medium':
+            opts['format'] = 'bestvideo[height<=720]+bestaudio/best[height<=720]/best'
         else:
-            opts['format'] = 'best'
+            opts['format'] = 'bestvideo+bestaudio/best'
             
     return opts
 
