@@ -3,16 +3,20 @@ import yt_dlp
 import imageio_ffmpeg
 
 def get_dl_opts(user_id, quality='best', format_type='video'):
-    outtmpl = f'downloads/{user_id}_%(id)s.%(ext)s'
-    os.makedirs('downloads', exist_ok=True)
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    outtmpl = os.path.join(base_dir, f'downloads/{user_id}_%(id)s.%(ext)s')
+    os.makedirs(os.path.join(base_dir, 'downloads'), exist_ok=True)
     
     opts = {
         'outtmpl': outtmpl,
         'quiet': True,
         'no_warnings': True,
         'ffmpeg_location': imageio_ffmpeg.get_ffmpeg_exe(),
-        'extractor_args': {'youtube': ['player_client=android']},
     }
+    
+    cookie_path = os.path.join(base_dir, 'cookies.txt')
+    if os.path.exists(cookie_path):
+        opts['cookiefile'] = cookie_path
     
     if format_type == 'audio':
         opts['format'] = 'bestaudio/best'
