@@ -3,25 +3,18 @@ import yt_dlp
 import imageio_ffmpeg
 import requests
 
-def get_cobalt_url(url, format_type='video'):
-    headers = {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
-    }
-    data = {
-        "url": url,
-        "isAudioOnly": format_type == 'audio'
-    }
-    endpoints = ['https://co.wuk.sh/api/json', 'https://api.cobalt.tools/api/json']
-    for ep in endpoints:
-        try:
-            r = requests.post(ep, headers=headers, json=data, timeout=10)
-            if r.status_code == 200:
-                res = r.json()
-                if 'url' in res:
-                    return res['url']
-        except:
-            continue
+def get_pytubefix_url(url, format_type='video'):
+    try:
+        from pytubefix import YouTube
+        yt = YouTube(url, use_po_token=True)
+        if format_type == 'audio':
+            stream = yt.streams.get_audio_only()
+        else:
+            stream = yt.streams.get_highest_resolution()
+        if stream and stream.url:
+            return stream.url
+    except Exception as e:
+        print("Pytubefix error:", e)
     return None
 
 def get_dl_opts(user_id, quality='best', format_type='video'):
@@ -82,9 +75,9 @@ def download_media(url, user_id, quality='best', format_type='video'):
         except Exception as e:
             err_msg = str(e)
             if 'youtube' in url.lower() or 'youtu.be' in url.lower():
-                cobalt_url = get_cobalt_url(url, format_type)
-                if cobalt_url:
-                    return {'status': 'success', 'type': 'url', 'url': cobalt_url, 'title': 'YouTube Video'}
+                pytube_url = get_pytubefix_url(url, format_type)
+                if pytube_url:
+                    return {'status': 'success', 'type': 'url', 'url': pytube_url, 'title': 'YouTube Video'}
             return {'status': 'error', 'message': err_msg}
 
 def delete_file(filepath):
