@@ -11,6 +11,7 @@ def get_dl_opts(user_id, quality='best', format_type='video'):
         'quiet': True,
         'no_warnings': True,
         'ffmpeg_location': imageio_ffmpeg.get_ffmpeg_exe(),
+        'extractor_args': {'youtube': ['player_client=android']},
     }
     
     if format_type == 'audio':
