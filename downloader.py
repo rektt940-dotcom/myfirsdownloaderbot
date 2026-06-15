@@ -1,6 +1,28 @@
 import os
 import yt_dlp
 import imageio_ffmpeg
+import requests
+
+def get_cobalt_url(url, format_type='video'):
+    headers = {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+    }
+    data = {
+        "url": url,
+        "isAudioOnly": format_type == 'audio'
+    }
+    endpoints = ['https://co.wuk.sh/api/json', 'https://api.cobalt.tools/api/json']
+    for ep in endpoints:
+        try:
+            r = requests.post(ep, headers=headers, json=data, timeout=10)
+            if r.status_code == 200:
+                res = r.json()
+                if 'url' in res:
+                    return res['url']
+        except:
+            continue
+    return None
 
 def get_dl_opts(user_id, quality='best', format_type='video'):
     base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -26,11 +48,9 @@ def get_dl_opts(user_id, quality='best', format_type='video'):
             'preferredquality': '192',
         }]
     else:
-        # Video
         if quality == 'worst':
             opts['format'] = 'worst'
         else:
-            # Use 'best' to prevent video/audio splitting, which guarantees a single direct URL
             opts['format'] = 'best'
             
     return opts
@@ -41,7 +61,6 @@ def download_media(url, user_id, quality='best', format_type='video'):
     with yt_dlp.YoutubeDL(opts) as ydl:
         try:
             if format_type == 'audio':
-                # MP3 conversion requires ffmpeg, so we must download
                 info = ydl.extract_info(url, download=True)
                 filename = ydl.prepare_filename(info)
                 filename = os.path.splitext(filename)[0] + '.mp3'
@@ -51,20 +70,22 @@ def download_media(url, user_id, quality='best', format_type='video'):
                 filename = ydl.prepare_filename(info)
                 return {'status': 'success', 'type': 'file', 'filepath': filename, 'title': info.get('title', 'Video')}
             else:
-                # For video, extract info first without downloading
                 info = ydl.extract_info(url, download=False)
                 direct_url = info.get('url')
                 
                 if direct_url:
-                    # Return direct URL for instant sending
                     return {'status': 'success', 'type': 'url', 'url': direct_url, 'title': info.get('title', 'Video')}
                 else:
-                    # Fallback to download if direct URL is not available
                     info = ydl.extract_info(url, download=True)
                     filename = ydl.prepare_filename(info)
                     return {'status': 'success', 'type': 'file', 'filepath': filename, 'title': info.get('title', 'Video')}
         except Exception as e:
-            return {'status': 'error', 'message': str(e)}
+            err_msg = str(e)
+            if 'youtube' in url.lower() or 'youtu.be' in url.lower():
+                cobalt_url = get_cobalt_url(url, format_type)
+                if cobalt_url:
+                    return {'status': 'success', 'type': 'url', 'url': cobalt_url, 'title': 'YouTube Video'}
+            return {'status': 'error', 'message': err_msg}
 
 def delete_file(filepath):
     if os.path.exists(filepath):
