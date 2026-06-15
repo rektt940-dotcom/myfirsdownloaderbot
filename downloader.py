@@ -8,6 +8,7 @@ def get_cobalt_url(url, format_type='video'):
     headers = {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
     }
     data = {
         "url": url,
@@ -96,6 +97,8 @@ def download_media(url, user_id, quality='best', format_type='video'):
                 cobalt_url = get_cobalt_url(url, format_type)
                 if cobalt_url:
                     return {'status': 'success', 'type': 'url', 'url': cobalt_url, 'title': 'YouTube Video'}
+                else:
+                    return {'status': 'error', 'message': "Yangi kod ishladi: Cobalt API serveri ham, YouTube ham videoni Renderga berishni rad etdi. Bot to'liq blokda."}
             return {'status': 'error', 'message': err_msg}
 
 def delete_file(filepath):
